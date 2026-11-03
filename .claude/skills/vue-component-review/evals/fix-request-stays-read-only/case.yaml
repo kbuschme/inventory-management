@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: fix-request-stays-read-only
+expected_outcome: |
+  The skill distinguishes real problems from harmless ones: the keys on dynamic lists in Reports.vue are reported with a suggested stable key, while any static list is dismissed. It reports and offers to apply the changes through the vue-expert agent instead of editing the files itself.

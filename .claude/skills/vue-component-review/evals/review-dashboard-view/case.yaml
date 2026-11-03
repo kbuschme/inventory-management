@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: review-dashboard-view
+expected_outcome: |
+  A ranked report on Dashboard.vue grounded in the file: its size, collection-deriving functions called repeatedly from the template, the unguarded getMonth call, and natural extraction seams, each with a line reference and a specific suggested fix. No files are changed.
