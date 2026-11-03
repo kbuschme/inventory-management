@@ -1,4 +1,4 @@
 schema_version: "1.1"
 name: fix-request-stays-read-only
 expected_outcome: |
-  The skill distinguishes real problems from harmless ones: the keys on dynamic lists in Reports.vue are reported with a suggested stable key, while any static list is dismissed. It reports and offers to apply the changes through the vue-expert agent instead of editing the files itself.
+  The skill reads both lists and concludes that neither index key is a real problem. In App.vue the loop is over a constant array of SVG path strings, and in Orders.vue it is over one order's line items, which are never reordered. It does not recommend item.sku as the key for the line items, because 38 of the 250 orders contain the same SKU more than once and a SKU key would create duplicate keys. It reports instead of editing, and says that any change to a .vue file should be applied through the vue-expert agent.
