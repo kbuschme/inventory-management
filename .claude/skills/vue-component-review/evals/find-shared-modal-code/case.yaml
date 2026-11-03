@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: find-shared-modal-code
+expected_outcome: |
+  A report that identifies the repeated modal shell (overlay, identical close() in seven components, shared overlay CSS) and proposes a shared base modal component with slots, notes the drifted formatDate helpers, and names what each modal would keep. No files are changed.
