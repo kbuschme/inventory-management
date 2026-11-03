@@ -89,6 +89,7 @@ export default {
     skus: 'SKUs',
     searchPlaceholder: 'Search by item name...',
     clearSearch: 'Clear search',
+    exportCsv: 'Export CSV',
     totalItems: 'Total Items',
     totalValue: 'Total Value',
     lowStockItems: 'Low Stock Items',
@@ -144,6 +145,42 @@ export default {
       status: {
         submitted: 'Submitted'
       }
+    }
+  },
+
+  // Reports
+  reports: {
+    title: 'Performance reports',
+    description: 'View quarterly performance metrics and monthly trends',
+    loading: 'Loading reports...',
+    loadError: 'Failed to load reports',
+    empty: 'No orders match the current filters. Adjust or reset the filters to see reports.',
+    notAvailable: 'N/A',
+    quarterly: {
+      title: 'Quarterly performance',
+      quarter: 'Quarter',
+      totalOrders: 'Total orders',
+      totalRevenue: 'Total revenue',
+      avgOrderValue: 'Avg order value',
+      fulfillmentRate: 'Fulfillment rate'
+    },
+    chart: {
+      title: 'Monthly revenue trend',
+      ariaLabel: 'Bar chart of monthly revenue'
+    },
+    monthly: {
+      title: 'Month-over-month analysis',
+      month: 'Month',
+      orders: 'Orders',
+      revenue: 'Revenue',
+      change: 'Change',
+      growthRate: 'Growth rate'
+    },
+    stats: {
+      totalRevenue: 'Total revenue (YTD)',
+      avgMonthlyRevenue: 'Avg monthly revenue',
+      totalOrders: 'Total orders (YTD)',
+      bestQuarter: 'Best performing quarter'
     }
   },
 

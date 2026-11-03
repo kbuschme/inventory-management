@@ -13,6 +13,7 @@
       <div class="card">
         <div class="card-header card-header-wrap">
           <h2 class="card-title">{{ t('inventory.stockLevels') }} ({{ filteredItems.length }} {{ t('inventory.skus') }})</h2>
+          <div class="header-actions">
           <div class="search-box">
             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
@@ -33,6 +34,18 @@
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
               </svg>
             </button>
+          </div>
+          <button
+            type="button"
+            class="btn export-btn"
+            :disabled="filteredItems.length === 0"
+            @click="exportCsv"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+            {{ t('inventory.exportCsv') }}
+          </button>
           </div>
         </div>
         <div class="table-container">
@@ -91,6 +104,7 @@ import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
 import InventoryDetailModal from '../components/InventoryDetailModal.vue'
+import { toCsv, downloadCsv } from '../utils/csv'
 
 export default {
   name: 'Inventory',
@@ -198,6 +212,33 @@ export default {
       return categoryMap[category] || category
     }
 
+    // Exports exactly the rows the table shows (search, filters and sort already applied).
+    // Unit cost / total value are written as raw numbers in the data's own currency; the
+    // on-screen currency symbol is not applied, so the CSV stays numeric for spreadsheets.
+    const exportCsv = () => {
+      if (filteredItems.value.length === 0) return
+
+      const columns = [
+        { header: t('inventory.table.sku'), value: item => item.sku },
+        { header: t('inventory.table.itemName'), value: item => translateProductName(item.name) },
+        { header: t('inventory.table.category'), value: item => translateCategory(item.category) },
+        { header: t('inventory.table.quantityOnHand'), value: item => item.quantity_on_hand },
+        { header: t('inventory.table.reorderPoint'), value: item => item.reorder_point },
+        { header: t('inventory.table.unitCost'), value: item => item.unit_cost },
+        // Rounded to cents to drop floating point noise such as 12.299999999999999
+        { header: t('inventory.table.totalValue'), value: item => Math.round(item.quantity_on_hand * item.unit_cost * 100) / 100 },
+        { header: t('inventory.table.location'), value: item => translateWarehouse(item.location) },
+        { header: t('inventory.table.status'), value: item => getStockStatus(item) }
+      ]
+
+      // Local date (not toISOString, which is UTC and can show the wrong day)
+      const now = new Date()
+      const pad = (n) => String(n).padStart(2, '0')
+      const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+
+      downloadCsv(`inventory-${stamp}.csv`, toCsv(filteredItems.value, columns))
+    }
+
     const showItemDetail = (item) => {
       selectedItem.value = item
       showItemModal.value = true
@@ -218,6 +259,7 @@ export default {
       showItemModal,
       selectedItem,
       showItemDetail,
+      exportCsv,
       currencySymbol,
       translateProductName,
       translateWarehouse
@@ -229,6 +271,20 @@ export default {
 <style scoped>
 .card-header-wrap {
   flex-wrap: wrap;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.export-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .search-box {
