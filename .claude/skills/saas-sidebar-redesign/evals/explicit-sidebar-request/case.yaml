@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: explicit-sidebar-request
+expected_outcome: |
+  Navigation is a vertical left sidebar, the old top nav bar is gone, every view uses one consistent spacing scale and card/table/header look, header utilities (filters, language, profile) are preserved, and the app still builds.

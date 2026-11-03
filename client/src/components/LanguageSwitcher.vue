@@ -1,7 +1,9 @@
 <template>
-  <div class="language-switcher">
+  <div class="language-switcher" :class="{ compact }">
     <button
       class="language-button"
+      :aria-label="compact ? localeName : null"
+      :title="compact ? localeName : null"
       @click="toggleDropdown"
       @blur="handleBlur"
     >
@@ -17,8 +19,9 @@
         <path d="M10 3C10 3 7.5 5.5 7.5 10C7.5 14.5 10 17 10 17" stroke="currentColor" stroke-width="1.5"/>
         <path d="M10 3C10 3 12.5 5.5 12.5 10C12.5 14.5 10 17 10 17" stroke="currentColor" stroke-width="1.5"/>
       </svg>
-      <span class="language-label">{{ localeName }}</span>
+      <span v-if="!compact" class="language-label">{{ localeName }}</span>
       <svg
+        v-if="!compact"
         class="chevron"
         :class="{ 'chevron-open': isDropdownOpen }"
         width="16"
@@ -58,6 +61,10 @@
 import { ref } from 'vue'
 import { useI18n } from '../composables/useI18n'
 
+defineProps({
+  compact: { type: Boolean, default: false }
+})
+
 const { currentLocale, setLocale, availableLocales, localeName } = useI18n()
 
 const isDropdownOpen = ref(false)
@@ -96,36 +103,50 @@ const selectLanguage = (locale) => {
 .language-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  width: 100%;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--sidebar-control-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-  font-size: 0.875rem;
-  color: #334155;
+  transition: background-color var(--transition);
+  color: var(--sidebar-text);
+  text-align: left;
+  font-size: var(--text-14);
 }
 
 .language-button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--sidebar-hover-bg);
+  color: var(--sidebar-text-active);
 }
 
-.globe-icon {
-  color: #64748b;
+.globe-icon,
+.chevron {
   flex-shrink: 0;
+  color: var(--sidebar-text-muted);
+}
+
+.compact .language-button {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+/* Open to the right of the 72px rail, bottom aligned with the trigger */
+.compact .dropdown-menu {
+  bottom: 0;
+  left: calc(100% + var(--space-4) + var(--space-2));
+  right: auto;
+  min-width: 180px;
 }
 
 .language-label {
+  flex: 1;
   font-weight: 500;
 }
 
 .chevron {
-  color: #64748b;
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
+  transition: transform var(--transition);
 }
 
 .chevron-open {
@@ -134,14 +155,14 @@ const selectLanguage = (locale) => {
 
 .dropdown-menu {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  bottom: calc(100% + var(--space-2));
+  left: 0;
   right: 0;
-  min-width: 160px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  z-index: var(--z-dropdown);
   overflow: hidden;
 }
 
@@ -150,26 +171,25 @@ const selectLanguage = (locale) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
   background: none;
   border: none;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s ease;
-  font-family: inherit;
-  font-size: 0.875rem;
+  transition: background-color var(--transition);
+  font-size: var(--text-14);
   font-weight: 500;
-  color: #334155;
+  color: var(--color-text);
 }
 
 .dropdown-item:hover {
-  background: #f8fafc;
+  background: var(--color-surface-muted);
 }
 
 .dropdown-item.active {
-  background: #eff6ff;
-  color: #2563eb;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
 }
 
 .language-name {
@@ -177,7 +197,7 @@ const selectLanguage = (locale) => {
 }
 
 .check-icon {
-  color: #2563eb;
+  color: var(--color-accent);
   flex-shrink: 0;
 }
 </style>

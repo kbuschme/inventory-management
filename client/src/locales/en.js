@@ -6,6 +6,15 @@ export default {
     orders: 'Orders',
     finance: 'Finance',
     demandForecast: 'Demand Forecast',
+    restocking: 'Restocking',
+    reports: 'Reports',
+    groupOperations: 'Operations',
+    groupPlanning: 'Planning',
+    openMenu: 'Open navigation',
+    closeMenu: 'Close navigation',
+    collapse: 'Collapse sidebar',
+    expand: 'Expand sidebar',
+    mainNav: 'Main navigation',
     companyName: 'Catalyst Components',
     subtitle: 'Inventory Management System'
   },
@@ -126,6 +135,15 @@ export default {
       status: 'Status',
       expectedDelivery: 'Expected Delivery',
       actualDelivery: 'Actual Delivery'
+    },
+    submitted: {
+      title: 'Submitted Orders',
+      empty: 'No restock orders have been submitted yet.',
+      leadTime: 'Lead Time',
+      days: '{count} days',
+      status: {
+        submitted: 'Submitted'
+      }
     }
   },
 
@@ -186,6 +204,37 @@ export default {
       trend: 'Trend',
       period: 'Period'
     }
+  },
+
+  // Restocking
+  restocking: {
+    title: 'Restocking',
+    description: 'Plan a restock order within your budget, prioritised by forecasted demand gap',
+    budget: 'Budget',
+    budgetHint: 'Items with the largest demand gap are added first. Items that do not fit are skipped.',
+    plannedSpend: 'Planned Spend',
+    remaining: 'Remaining Budget',
+    leadTime: 'Expected Lead Time',
+    days: '{count} days',
+    recommendations: 'Recommended Items',
+    table: {
+      sku: 'SKU',
+      itemName: 'Item Name',
+      trend: 'Trend',
+      currentDemand: 'Current Demand',
+      forecastedDemand: 'Forecasted Demand',
+      quantity: 'Order Qty',
+      unitCost: 'Unit Cost',
+      lineCost: 'Line Cost',
+      leadTime: 'Lead Time (days)'
+    },
+    empty: 'No items fit the current budget. Increase the budget to see restocking recommendations.',
+    placeOrder: 'Place Order',
+    placing: 'Placing order...',
+    success: 'Order {orderNumber} submitted. Lead time: {days} days. Expected delivery: {date}.',
+    viewOrder: 'View in Orders',
+    error: 'Failed to place order',
+    loadError: 'Failed to load demand forecasts'
   },
 
   // Filters
@@ -282,6 +331,30 @@ export default {
   },
 
   // Profile Details Modal
+  purchaseOrder: {
+    createTitle: 'Create Purchase Order',
+    viewTitle: 'Purchase Order',
+    sku: 'SKU',
+    orderId: 'Order ID',
+    shortage: 'Shortage',
+    units: 'units',
+    poId: 'PO ID',
+    status: 'Status',
+    supplier: 'Supplier Name',
+    quantity: 'Quantity',
+    unitCost: 'Unit Cost',
+    total: 'Total',
+    expectedDelivery: 'Expected Delivery Date',
+    createdDate: 'Created',
+    notes: 'Notes',
+    notesOptional: 'Notes (optional)',
+    create: 'Create PO',
+    creating: 'Creating...',
+    close: 'Close',
+    loading: 'Loading purchase order...',
+    loadFailed: 'Failed to load purchase order',
+    createFailed: 'Failed to create purchase order'
+  },
   profileDetails: {
     title: 'Profile Details',
     email: 'Email',

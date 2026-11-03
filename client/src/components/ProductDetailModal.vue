@@ -24,7 +24,7 @@
                 <h4 class="product-name">{{ product.name }}</h4>
                 <div class="product-sku">SKU: {{ product.sku }}</div>
               </div>
-              <span class="stock-badge" :class="getStockBadgeClass(product.stockLevel)">
+              <span class="badge stock-badge" :class="getStockBadgeClass(product.stockLevel)">
                 {{ product.stockLevel }}
               </span>
             </div>
@@ -41,32 +41,32 @@
               </div>
 
               <div class="info-item">
-                <div class="info-label">Units Ordered</div>
+                <div class="info-label">Units ordered</div>
                 <div class="info-value">{{ product.unitsOrdered }}</div>
               </div>
 
               <div class="info-item">
-                <div class="info-label">Total Revenue</div>
+                <div class="info-label">Total revenue</div>
                 <div class="info-value">{{ currencySymbol }}{{ product.revenue.toLocaleString() }}</div>
               </div>
 
               <div class="info-item">
-                <div class="info-label">Current Stock</div>
+                <div class="info-label">Current stock</div>
                 <div class="info-value">{{ product.quantityOnHand }} units</div>
               </div>
 
               <div class="info-item">
-                <div class="info-label">Reorder Point</div>
+                <div class="info-label">Reorder point</div>
                 <div class="info-value">{{ product.reorderPoint }} units</div>
               </div>
 
               <div class="info-item">
-                <div class="info-label">First Order Date</div>
+                <div class="info-label">First order date</div>
                 <div class="info-value">{{ formatDate(product.firstOrderDate) }}</div>
               </div>
 
               <div class="info-item">
-                <div class="info-label">Stock Status</div>
+                <div class="info-label">Stock status</div>
                 <div class="info-value">
                   <span :class="['badge', getStockBadgeClass(product.stockLevel)]">
                     {{ product.stockLevel }}
@@ -131,89 +131,51 @@ const getStockBadgeClass = (stockLevel) => {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 1rem;
-}
-
 .modal-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
   max-width: 700px;
-  width: 100%;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.modal-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
+.modal-body {
+  flex: 1;
 }
 
 .close-button {
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--color-text-muted);
   cursor: pointer;
-  padding: 0.5rem;
+  padding: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  transition: all 0.15s ease;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition), color var(--transition);
 }
 
 .close-button:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
+  background: var(--color-neutral-soft);
+  color: var(--color-text);
 }
 
 .product-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1.25rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 2rem;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-5);
 }
 
 .product-icon {
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border-radius: 12px;
+  background: var(--color-neutral-soft);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   flex-shrink: 0;
 }
 
@@ -223,99 +185,53 @@ const getStockBadgeClass = (stockLevel) => {
 }
 
 .product-name {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 0.5rem 0;
+  font-size: var(--text-20);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0 0 var(--space-1) 0;
 }
 
 .product-sku {
-  font-size: 0.875rem;
-  color: #64748b;
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: var(--text-14);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .stock-badge {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
   flex-shrink: 0;
-}
-
-.stock-badge.success {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.stock-badge.warning {
-  background: #fed7aa;
-  color: #92400e;
-}
-
-.stock-badge.danger {
-  background: #fecaca;
-  color: #991b1b;
 }
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: var(--space-5);
 }
 
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-1);
+  min-width: 0;
 }
 
 .info-label {
-  font-size: 0.813rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #64748b;
+  font-size: var(--text-13);
+  font-weight: 400;
+  color: var(--color-text-muted);
 }
 
 .info-value {
-  font-size: 0.938rem;
-  color: #0f172a;
+  font-size: var(--text-14);
+  color: var(--color-text);
   font-weight: 500;
-}
-
-.modal-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-.btn-secondary {
-  padding: 0.625rem 1.25rem;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.875rem;
-  color: #334155;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-
-.btn-secondary:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 /* Modal transition animations */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition);
 }
 
 .modal-enter-from,
@@ -325,7 +241,7 @@ const getStockBadgeClass = (stockLevel) => {
 
 .modal-enter-active .modal-container,
 .modal-leave-active .modal-container {
-  transition: transform 0.2s ease;
+  transition: transform var(--transition);
 }
 
 .modal-enter-from .modal-container,

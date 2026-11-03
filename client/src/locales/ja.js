@@ -6,6 +6,15 @@ export default {
     orders: '注文',
     finance: '財務',
     demandForecast: '需要予測',
+    restocking: '補充発注',
+    reports: 'レポート',
+    groupOperations: '業務',
+    groupPlanning: '計画',
+    openMenu: 'ナビゲーションを開く',
+    closeMenu: 'ナビゲーションを閉じる',
+    collapse: 'サイドバーを折りたたむ',
+    expand: 'サイドバーを展開する',
+    mainNav: 'メインナビゲーション',
     companyName: '触媒コンポーネンツ',
     subtitle: '在庫管理システム'
   },
@@ -126,6 +135,15 @@ export default {
       status: 'ステータス',
       expectedDelivery: '予定配達日',
       actualDelivery: '実際の配達日'
+    },
+    submitted: {
+      title: '発注済みの注文',
+      empty: '発注済みの補充注文はまだありません。',
+      leadTime: 'リードタイム',
+      days: '{count}日',
+      status: {
+        submitted: '発注済み'
+      }
     }
   },
 
@@ -186,6 +204,37 @@ export default {
       trend: 'トレンド',
       period: '期間'
     }
+  },
+
+  // Restocking
+  restocking: {
+    title: '補充発注',
+    description: '予算内で需要ギャップの大きい品目から補充注文を計画します',
+    budget: '予算',
+    budgetHint: '需要ギャップの大きい品目から順に追加されます。予算に収まらない品目はスキップされます。',
+    plannedSpend: '予定支出',
+    remaining: '残り予算',
+    leadTime: '予想リードタイム',
+    days: '{count}日',
+    recommendations: '推奨品目',
+    table: {
+      sku: 'SKU',
+      itemName: '品目名',
+      trend: 'トレンド',
+      currentDemand: '現在の需要',
+      forecastedDemand: '予測需要',
+      quantity: '発注数量',
+      unitCost: '単価',
+      lineCost: '小計',
+      leadTime: 'リードタイム（日）'
+    },
+    empty: '現在の予算に収まる品目がありません。予算を増やすと補充の推奨が表示されます。',
+    placeOrder: '発注する',
+    placing: '発注中...',
+    success: '注文 {orderNumber} を発注しました。リードタイム: {days}日。配達予定日: {date}。',
+    viewOrder: '注文で確認',
+    error: '発注に失敗しました',
+    loadError: '需要予測の読み込みに失敗しました'
   },
 
   // Filters
@@ -282,6 +331,30 @@ export default {
   },
 
   // Profile Details Modal
+  purchaseOrder: {
+    createTitle: '発注書を作成',
+    viewTitle: '発注書',
+    sku: 'SKU',
+    orderId: '注文ID',
+    shortage: '不足',
+    units: '単位',
+    poId: '発注書ID',
+    status: 'ステータス',
+    supplier: '仕入先名',
+    quantity: '数量',
+    unitCost: '単価',
+    total: '合計',
+    expectedDelivery: '納品予定日',
+    createdDate: '作成日',
+    notes: '備考',
+    notesOptional: '備考（任意）',
+    create: '発注書を作成',
+    creating: '作成中...',
+    close: '閉じる',
+    loading: '発注書を読み込み中...',
+    loadFailed: '発注書の読み込みに失敗しました',
+    createFailed: '発注書の作成に失敗しました'
+  },
   profileDetails: {
     title: 'プロフィール詳細',
     email: 'メールアドレス',
