@@ -1,8 +1,10 @@
 <template>
   <div class="backlog">
     <div class="page-header">
-      <h2>Backlog Management</h2>
-      <p>Track and resolve inventory shortages</p>
+      <div>
+        <h1 class="page-title">Backlog Management</h1>
+        <p class="page-subtitle">Track and resolve inventory shortages</p>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">Loading backlog...</div>
@@ -31,10 +33,8 @@
         <div class="card-header">
           <h3 class="card-title">Backlog Items</h3>
         </div>
-        <div v-if="backlogItems.length === 0" style="padding: 3rem; text-align: center;">
-          <p style="font-size: 1.125rem; color: #10b981; font-weight: 600;">
-            ✓ No backlog items - all orders can be fulfilled!
-          </p>
+        <div v-if="backlogItems.length === 0" class="empty-state">
+          <p class="empty-title">No backlog items - all orders can be fulfilled.</p>
         </div>
         <div v-else class="table-container">
           <table>
@@ -42,11 +42,11 @@
               <tr>
                 <th>Order ID</th>
                 <th>SKU</th>
-                <th>Item Name</th>
-                <th>Quantity Needed</th>
-                <th>Quantity Available</th>
+                <th>Item name</th>
+                <th class="num">Quantity needed</th>
+                <th class="num">Quantity available</th>
                 <th>Shortage</th>
-                <th>Days Delayed</th>
+                <th class="num">Days delayed</th>
                 <th>Priority</th>
               </tr>
             </thead>
@@ -55,15 +55,15 @@
                 <td><strong>{{ item.order_id }}</strong></td>
                 <td><strong>{{ item.item_sku }}</strong></td>
                 <td>{{ item.item_name }}</td>
-                <td>{{ item.quantity_needed }}</td>
-                <td>{{ item.quantity_available }}</td>
+                <td class="num">{{ item.quantity_needed }}</td>
+                <td class="num">{{ item.quantity_available }}</td>
                 <td>
                   <span class="badge danger">
                     {{ item.quantity_needed - item.quantity_available }} units short
                   </span>
                 </td>
-                <td>
-                  <span :style="{ color: item.days_delayed > 7 ? '#ef4444' : '#f59e0b' }">
+                <td class="num">
+                  <span :class="item.days_delayed > 7 ? 'days-severe' : 'days-moderate'">
                     {{ item.days_delayed }} days
                   </span>
                 </td>
@@ -150,3 +150,21 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.empty-title {
+  font-size: var(--text-16);
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.days-severe {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.days-moderate {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+</style>

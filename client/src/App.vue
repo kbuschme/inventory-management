@@ -1,42 +1,76 @@
 <template>
-  <div class="app">
-    <header class="top-nav">
-      <div class="nav-container">
-        <div class="logo">
-          <h1>{{ t('nav.companyName') }}</h1>
-          <span class="subtitle">{{ t('nav.subtitle') }}</span>
+  <div class="app-shell" :class="{ 'is-rail': isRail, 'is-animated': animated }">
+    <button
+      class="menu-button"
+      type="button"
+      :aria-label="navOpen ? t('nav.closeMenu') : t('nav.openMenu')"
+      :aria-expanded="navOpen"
+      aria-controls="app-sidebar"
+      @click="navOpen = !navOpen"
+    >
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+
+    <div v-if="navOpen" class="sidebar-backdrop" aria-hidden="true" @click="navOpen = false"></div>
+
+    <aside id="app-sidebar" class="sidebar" :class="{ open: navOpen }">
+      <div class="sidebar-brand">
+        <span class="brand-monogram" aria-hidden="true">{{ brandInitial }}</span>
+        <span class="brand-name">{{ t('nav.companyName') }}</span>
+        <span class="brand-subtitle">{{ t('nav.subtitle') }}</span>
+      </div>
+
+      <nav class="sidebar-nav" :aria-label="t('nav.mainNav')">
+        <div v-for="group in navGroups" :key="group.key" class="nav-group">
+          <div class="nav-group-label">{{ t(group.labelKey) }}</div>
+          <router-link
+            v-for="item in group.items"
+            :key="item.to"
+            :to="item.to"
+            class="nav-item"
+            :title="isRail ? t(item.labelKey) : null"
+          >
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path v-for="(d, i) in item.icon" :key="i" :d="d" />
+            </svg>
+            <span class="nav-label">{{ t(item.labelKey) }}</span>
+          </router-link>
         </div>
-        <nav class="nav-tabs">
-          <router-link to="/" :class="{ active: $route.path === '/' }">
-            {{ t('nav.overview') }}
-          </router-link>
-          <router-link to="/inventory" :class="{ active: $route.path === '/inventory' }">
-            {{ t('nav.inventory') }}
-          </router-link>
-          <router-link to="/orders" :class="{ active: $route.path === '/orders' }">
-            {{ t('nav.orders') }}
-          </router-link>
-          <router-link to="/spending" :class="{ active: $route.path === '/spending' }">
-            {{ t('nav.finance') }}
-          </router-link>
-          <router-link to="/demand" :class="{ active: $route.path === '/demand' }">
-            {{ t('nav.demandForecast') }}
-          </router-link>
-          <router-link to="/reports" :class="{ active: $route.path === '/reports' }">
-            Reports
-          </router-link>
-        </nav>
-        <LanguageSwitcher />
+      </nav>
+
+      <button
+        v-if="!isMobile"
+        class="sidebar-toggle"
+        type="button"
+        :aria-label="collapsed ? t('nav.expand') : t('nav.collapse')"
+        :title="collapsed ? t('nav.expand') : t('nav.collapse')"
+        :aria-expanded="!collapsed"
+        aria-controls="app-sidebar"
+        @click="toggleCollapsed"
+      >
+        <svg class="nav-icon toggle-chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
+      </button>
+
+      <div class="sidebar-footer">
+        <LanguageSwitcher :compact="isRail" />
         <ProfileMenu
+          :compact="isRail"
           @show-profile-details="showProfileDetails = true"
           @show-tasks="showTasks = true"
         />
       </div>
-    </header>
-    <FilterBar />
-    <main class="main-content">
-      <router-view />
-    </main>
+    </aside>
+
+    <div class="content-column">
+      <FilterBar />
+      <main class="main-content">
+        <router-view />
+      </main>
+    </div>
 
     <ProfileDetailsModal
       :is-open="showProfileDetails"
@@ -55,7 +89,8 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from './api'
 import { useAuth } from './composables/useAuth'
 import { useI18n } from './composables/useI18n'
@@ -77,6 +112,81 @@ export default {
   setup() {
     const { currentUser } = useAuth()
     const { t } = useI18n()
+    const route = useRoute()
+
+    const navGroups = [
+      {
+        key: 'operations',
+        labelKey: 'nav.groupOperations',
+        items: [
+          { to: '/', labelKey: 'nav.overview', icon: ['M3 3h7v7H3z', 'M14 3h7v7h-7z', 'M14 14h7v7h-7z', 'M3 14h7v7H3z'] },
+          { to: '/inventory', labelKey: 'nav.inventory', icon: ['M21 8l-9-5-9 5 9 5 9-5z', 'M3 8v8l9 5 9-5V8', 'M12 13v8'] },
+          { to: '/orders', labelKey: 'nav.orders', icon: ['M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1z', 'M8 6H6a2 2 0 00-2 2v11a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-2', 'M9 12h6M9 16h4'] },
+          { to: '/restocking', labelKey: 'nav.restocking', icon: ['M21 12a9 9 0 01-15.5 6.2L3 16', 'M3 12a9 9 0 0115.5-6.2L21 8', 'M21 3v5h-5', 'M3 21v-5h5'] }
+        ]
+      },
+      {
+        key: 'planning',
+        labelKey: 'nav.groupPlanning',
+        items: [
+          { to: '/demand', labelKey: 'nav.demandForecast', icon: ['M3 17l6-6 4 4 8-8', 'M15 7h6v6'] },
+          { to: '/spending', labelKey: 'nav.finance', icon: ['M12 2v20', 'M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6'] },
+          { to: '/reports', labelKey: 'nav.reports', icon: ['M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z', 'M14 3v5h5', 'M9 13h6M9 17h6'] }
+        ]
+      }
+    ]
+
+    // Sidebar collapse state. Computed in setup so the first paint is already correct.
+    const COLLAPSE_KEY = 'inventory.sidebarCollapsed'
+    const mqMobile = window.matchMedia ? window.matchMedia('(max-width: 768px)') : null
+    const mqNarrow = window.matchMedia ? window.matchMedia('(max-width: 1100px)') : null
+
+    const readStored = () => {
+      try {
+        const v = window.localStorage.getItem(COLLAPSE_KEY)
+        return v === 'true' ? true : v === 'false' ? false : null
+      } catch (e) {
+        return null
+      }
+    }
+    const stored = readStored()
+    const userChose = ref(stored !== null)
+    const collapsed = ref(stored !== null ? stored : !!(mqNarrow && mqNarrow.matches))
+    const isMobile = ref(!!(mqMobile && mqMobile.matches))
+    // Rail only applies on desktop; the mobile drawer always shows labels.
+    const isRail = computed(() => collapsed.value && !isMobile.value)
+    const brandInitial = computed(() => Array.from(t('nav.companyName'))[0] || '')
+
+    const toggleCollapsed = () => {
+      collapsed.value = !collapsed.value
+      userChose.value = true
+      try {
+        window.localStorage.setItem(COLLAPSE_KEY, String(collapsed.value))
+      } catch (e) { /* storage blocked: choice lasts for this session only */ }
+    }
+    const onMobileChange = (e) => { isMobile.value = e.matches }
+    const onNarrowChange = (e) => { if (!userChose.value) collapsed.value = e.matches }
+
+    // Enable width/margin transitions only after the first paint.
+    const animated = ref(false)
+    onMounted(() => {
+      if (mqMobile) mqMobile.addEventListener('change', onMobileChange)
+      if (mqNarrow) mqNarrow.addEventListener('change', onNarrowChange)
+      requestAnimationFrame(() => requestAnimationFrame(() => { animated.value = true }))
+    })
+    onUnmounted(() => {
+      if (mqMobile) mqMobile.removeEventListener('change', onMobileChange)
+      if (mqNarrow) mqNarrow.removeEventListener('change', onNarrowChange)
+    })
+
+    const navOpen = ref(false)
+    const closeNav = () => { navOpen.value = false }
+    const onKeydown = (e) => {
+      if (e.key === 'Escape') closeNav()
+    }
+    watch(() => route.path, closeNav)
+    onMounted(() => window.addEventListener('keydown', onKeydown))
+    onUnmounted(() => window.removeEventListener('keydown', onKeydown))
     const showProfileDetails = ref(false)
     const showTasks = ref(false)
     const apiTasks = ref([])
@@ -150,6 +260,14 @@ export default {
 
     return {
       t,
+      navGroups,
+      navOpen,
+      collapsed,
+      isRail,
+      isMobile,
+      animated,
+      brandInitial,
+      toggleCollapsed,
       showProfileDetails,
       showTasks,
       tasks,
@@ -162,325 +280,295 @@ export default {
 </script>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: #f8fafc;
-  color: #1e293b;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.app {
-  display: flex;
-  flex-direction: column;
+.app-shell {
+  --sidebar-current: var(--sidebar-width);
   min-height: 100vh;
 }
 
-.top-nav {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+.app-shell.is-rail {
+  --sidebar-current: var(--sidebar-width-collapsed);
 }
 
-.nav-container {
-  max-width: 1600px;
-  margin: 0 auto;
+/* ---------- Sidebar ---------- */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-current);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  z-index: var(--z-sidebar);
+}
+
+.sidebar-brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.brand-name {
+  font-size: var(--text-16);
+  font-weight: 600;
+  color: var(--sidebar-text-active);
+}
+
+.brand-subtitle {
+  font-size: var(--text-12);
+  color: var(--sidebar-text-muted);
+}
+
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nav-group-label {
+  padding: 0 var(--space-3) var(--space-1);
+  font-size: var(--text-12);
+  font-weight: 500;
+  color: var(--sidebar-text-muted);
+}
+
+.nav-item {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 0 2rem;
-  height: 70px;
-}
-
-.nav-container > .nav-tabs {
-  margin-left: auto;
-  margin-right: 1rem;
-}
-
-.nav-container > .language-switcher {
-  margin-right: 1rem;
-}
-
-.logo {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-}
-
-.logo h1 {
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
-}
-
-.subtitle {
-  font-size: 0.813rem;
-  color: #64748b;
-  font-weight: 400;
-  padding-left: 0.75rem;
-  border-left: 1px solid #e2e8f0;
-}
-
-.nav-tabs {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.nav-tabs a {
-  padding: 0.625rem 1.25rem;
-  color: #64748b;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--sidebar-text);
   text-decoration: none;
+  font-size: var(--text-14);
   font-weight: 500;
-  font-size: 0.938rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  position: relative;
+  transition: background-color var(--transition), color var(--transition);
 }
 
-.nav-tabs a:hover {
-  color: #0f172a;
-  background: #f1f5f9;
+.nav-item:hover {
+  background: var(--sidebar-hover-bg);
+  color: var(--sidebar-text-active);
 }
 
-.nav-tabs a.active {
-  color: #2563eb;
-  background: #eff6ff;
+.nav-item.router-link-exact-active {
+  background: var(--sidebar-item-active-bg);
+  color: var(--sidebar-text-active);
 }
 
-.nav-tabs a.active::after {
+.nav-item.router-link-exact-active::before {
   content: '';
   position: absolute;
-  bottom: -1px;
   left: 0;
-  right: 0;
-  height: 2px;
-  background: #2563eb;
+  top: var(--space-1);
+  bottom: var(--space-1);
+  width: 3px;
+  border-radius: 0 var(--space-1) var(--space-1) 0;
+  background: var(--sidebar-accent);
+}
+
+.sidebar :focus-visible {
+  outline-color: var(--sidebar-accent);
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-sm);
+  color: var(--sidebar-text);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.sidebar-toggle:hover {
+  background: var(--sidebar-hover-bg);
+  color: var(--sidebar-text-active);
+}
+
+.toggle-chevron {
+  transition: transform var(--transition);
+}
+
+.brand-monogram {
+  display: none;
+}
+
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--sidebar-border);
+}
+
+/* ---------- Collapsed rail (desktop only) ---------- */
+.app-shell.is-animated .sidebar {
+  transition: width var(--transition), transform var(--transition), visibility var(--transition);
+}
+
+.app-shell.is-animated .content-column {
+  transition: margin-left var(--transition);
+}
+
+.is-rail .sidebar-brand {
+  position: relative;
+  align-items: center;
+  padding-inline: 0;
+}
+
+.is-rail .brand-monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--sidebar-item-active-bg);
+  color: var(--sidebar-text-active);
+  font-size: var(--text-16);
+  font-weight: 600;
+}
+
+/* Visually hidden but still exposed to assistive tech */
+.is-rail .brand-name,
+.is-rail .brand-subtitle,
+.is-rail .nav-label,
+.is-rail .nav-group-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.is-rail .sidebar-nav {
+  gap: var(--space-3);
+}
+
+.is-rail .nav-group + .nav-group {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.is-rail .nav-item {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.is-rail .sidebar-toggle {
+  align-self: center;
+}
+
+.is-rail .toggle-chevron {
+  transform: rotate(180deg);
+}
+
+/* ---------- Content column ---------- */
+.content-column {
+  margin-left: var(--sidebar-current);
+  min-width: 0;
+  min-height: 100vh;
 }
 
 .main-content {
-  flex: 1;
-  max-width: 1600px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 1.5rem 2rem;
+  max-width: var(--content-max-width);
+  padding: var(--space-6);
 }
 
-.page-header {
-  margin-bottom: 1.5rem;
+.menu-button,
+.sidebar-backdrop {
+  display: none;
 }
 
-.page-header h2 {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 0.375rem;
-  letter-spacing: -0.025em;
+@media (prefers-reduced-motion: reduce) {
+  .app-shell.is-animated .sidebar,
+  .app-shell.is-animated .content-column {
+    transition: none;
+  }
 }
 
-.page-header p {
-  color: #64748b;
-  font-size: 0.938rem;
-}
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: none;
+  }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
-}
+  .sidebar {
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform var(--transition), visibility var(--transition);
+  }
 
-.stat-card {
-  background: white;
-  padding: 1.25rem;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-}
+  .sidebar.open {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: var(--shadow-float);
+  }
 
-.stat-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: var(--z-backdrop);
+  }
 
-.stat-label {
-  color: #64748b;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.625rem;
-}
+  .menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: var(--space-2);
+    left: var(--space-3);
+    width: 40px;
+    height: 40px;
+    z-index: calc(var(--z-sticky) + 1);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink);
+    cursor: pointer;
+  }
 
-.stat-value {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
-}
+  .content-column {
+    margin-left: 0;
+  }
 
-.stat-card.warning .stat-value {
-  color: #ea580c;
-}
-
-.stat-card.success .stat-value {
-  color: #059669;
-}
-
-.stat-card.danger .stat-value {
-  color: #dc2626;
-}
-
-.stat-card.info .stat-value {
-  color: #2563eb;
-}
-
-.card {
-  background: white;
-  border-radius: 10px;
-  padding: 1.25rem;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 1.25rem;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.875rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.card-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-th {
-  text-align: left;
-  padding: 0.5rem 0.75rem;
-  font-weight: 600;
-  color: #475569;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-td {
-  padding: 0.5rem 0.75rem;
-  border-top: 1px solid #f1f5f9;
-  color: #334155;
-  font-size: 0.875rem;
-}
-
-tbody tr {
-  transition: background-color 0.15s ease;
-}
-
-tbody tr:hover {
-  background: #f8fafc;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.313rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.badge.success {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge.warning {
-  background: #fed7aa;
-  color: #92400e;
-}
-
-.badge.danger {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.badge.info {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.badge.increasing {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge.decreasing {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.badge.stable {
-  background: #e0e7ff;
-  color: #3730a3;
-}
-
-.badge.high {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.badge.medium {
-  background: #fed7aa;
-  color: #92400e;
-}
-
-.badge.low {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: #64748b;
-  font-size: 0.938rem;
-}
-
-.error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  font-size: 0.938rem;
+  .main-content {
+    padding: var(--space-4);
+  }
 }
 </style>

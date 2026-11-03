@@ -11,7 +11,31 @@ from fastapi.testclient import TestClient
 server_path = Path(__file__).parent.parent.parent / "server"
 sys.path.insert(0, str(server_path))
 
-from main import app
+from main import app, submitted_orders, tasks, purchase_orders
+
+
+@pytest.fixture
+def clean_purchase_orders():
+    """Clear in-memory purchase orders before and after a test (module-level shared state, empty at startup)."""
+    purchase_orders.clear()
+    yield
+    purchase_orders.clear()
+
+
+@pytest.fixture
+def clean_tasks():
+    """Clear in-memory tasks before and after a test (the list is module-level, shared state)."""
+    tasks.clear()
+    yield
+    tasks.clear()
+
+
+@pytest.fixture
+def clean_submitted_orders():
+    """Clear in-memory restocking orders before and after a test (the list is module-level, shared state)."""
+    submitted_orders.clear()
+    yield
+    submitted_orders.clear()
 
 
 @pytest.fixture

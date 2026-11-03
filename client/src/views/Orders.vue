@@ -1,8 +1,10 @@
 <template>
   <div class="orders">
     <div class="page-header">
-      <h2>{{ t('orders.title') }}</h2>
-      <p>{{ t('orders.description') }}</p>
+      <div>
+        <h1 class="page-title">{{ t('orders.title') }}</h1>
+        <p class="page-subtitle">{{ t('orders.description') }}</p>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
@@ -29,7 +31,7 @@
 
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">{{ t('orders.allOrders') }} ({{ orders.length }})</h3>
+          <h2 class="card-title">{{ t('orders.allOrders') }} ({{ orders.length }})</h2>
         </div>
         <div class="table-container">
           <table class="orders-table">
@@ -41,7 +43,7 @@
                 <th class="col-status">{{ t('orders.table.status') }}</th>
                 <th class="col-date">{{ t('orders.table.orderDate') }}</th>
                 <th class="col-date">{{ t('orders.table.expectedDelivery') }}</th>
-                <th class="col-value">{{ t('orders.table.totalValue') }}</th>
+                <th class="col-value num">{{ t('orders.table.totalValue') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -68,7 +70,44 @@
                 </td>
                 <td class="col-date">{{ formatDate(order.order_date) }}</td>
                 <td class="col-date">{{ formatDate(order.expected_delivery) }}</td>
-                <td class="col-value"><strong>{{ currencySymbol }}{{ order.total_value.toLocaleString() }}</strong></td>
+                <td class="col-value num"><strong>{{ currencySymbol }}{{ order.total_value.toLocaleString() }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">{{ t('orders.submitted.title') }} ({{ submittedOrders.length }})</h2>
+        </div>
+        <div v-if="submittedLoading" class="loading">{{ t('common.loading') }}</div>
+        <div v-else-if="submittedError" class="error">{{ submittedError }}</div>
+        <div v-else-if="submittedOrders.length === 0" class="empty-state">{{ t('orders.submitted.empty') }}</div>
+        <div v-else class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>{{ t('orders.table.orderNumber') }}</th>
+                <th>{{ t('orders.table.orderDate') }}</th>
+                <th>{{ t('orders.table.items') }}</th>
+                <th class="num">{{ t('orders.table.totalValue') }}</th>
+                <th class="num">{{ t('orders.submitted.leadTime') }}</th>
+                <th>{{ t('orders.table.expectedDelivery') }}</th>
+                <th>{{ t('orders.table.status') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="order in submittedOrders" :key="order.id">
+                <td><strong>{{ order.order_number }}</strong></td>
+                <td>{{ formatDate(order.order_date) }}</td>
+                <td>{{ formatSubmittedItems(order.items) }}</td>
+                <td class="num"><strong>{{ formatMoney(order.total_value) }}</strong></td>
+                <td class="num">{{ t('orders.submitted.days', { count: order.lead_time_days }) }}</td>
+                <td>{{ formatDate(order.expected_delivery) }}</td>
+                <td>
+                  <span class="badge info">{{ t('orders.submitted.status.submitted') }}</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -83,6 +122,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
+import { formatCurrency } from '../utils/currency'
 
 export default {
   name: 'Orders',
@@ -95,6 +135,11 @@ export default {
     const loading = ref(true)
     const error = ref(null)
     const orders = ref([])
+
+    // Submitted restock orders are not filterable, so they have their own state and loader
+    const submittedOrders = ref([])
+    const submittedLoading = ref(true)
+    const submittedError = ref(null)
 
     // Use shared filters
     const {
@@ -122,6 +167,25 @@ export default {
       } finally {
         loading.value = false
       }
+    }
+
+    const loadSubmittedOrders = async () => {
+      try {
+        submittedLoading.value = true
+        submittedError.value = null
+        submittedOrders.value = await api.getSubmittedOrders()
+      } catch (err) {
+        submittedError.value = 'Failed to load submitted orders: ' + err.message
+      } finally {
+        submittedLoading.value = false
+      }
+    }
+
+    // Restock order totals are stored in USD; convert for the active currency
+    const formatMoney = (value) => formatCurrency(value, currentCurrency.value)
+
+    const formatSubmittedItems = (items) => {
+      return items.map(item => `${item.sku} x ${item.quantity}`).join(', ')
     }
 
     // Watch for filter changes and reload data
@@ -153,7 +217,10 @@ export default {
       })
     }
 
-    onMounted(loadOrders)
+    onMounted(() => {
+      loadOrders()
+      loadSubmittedOrders()
+    })
 
     return {
       t,
@@ -164,6 +231,11 @@ export default {
       getOrderStatusClass,
       formatDate,
       currencySymbol,
+      submittedOrders,
+      submittedLoading,
+      submittedError,
+      formatMoney,
+      formatSubmittedItems,
       translateProductName,
       translateCustomerName
     }
@@ -176,11 +248,12 @@ export default {
 .orders-table {
   table-layout: fixed;
   width: 100%;
+  min-width: 900px;
 }
 
 /* Column widths */
 .col-order-number {
-  width: 130px;
+  width: 160px;
 }
 
 .col-customer {
@@ -210,7 +283,7 @@ export default {
 
 .items-summary {
   cursor: pointer;
-  color: #3b82f6;
+  color: var(--color-accent);
   font-weight: 500;
   list-style: none;
   user-select: none;
@@ -222,11 +295,11 @@ export default {
 }
 
 .items-summary::before {
-  content: '▶';
+  content: '\25B6';
   display: inline-block;
-  margin-right: 0.375rem;
-  font-size: 0.75rem;
-  transition: transform 0.2s;
+  margin-right: var(--space-1);
+  font-size: var(--text-12);
+  transition: transform var(--transition);
 }
 
 .items-details[open] .items-summary::before {
@@ -234,22 +307,22 @@ export default {
 }
 
 .items-summary:hover {
-  color: #2563eb;
+  color: var(--color-accent-hover);
   text-decoration: underline;
 }
 
-/* Dropdown container */
+/* Dropdown container (floats, so it gets the float shadow) */
 .items-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: 0.5rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 0.75rem;
-  z-index: 10;
+  margin-top: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  padding: var(--space-3);
+  z-index: var(--z-dropdown);
   min-width: 300px;
   max-width: 400px;
 }
@@ -257,9 +330,9 @@ export default {
 .item-entry {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  border-bottom: 1px solid #f1f5f9;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-neutral-soft);
 }
 
 .item-entry:last-child {
@@ -267,13 +340,13 @@ export default {
 }
 
 .item-name {
-  font-size: 0.875rem;
+  font-size: var(--text-14);
   font-weight: 500;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .item-meta {
-  font-size: 0.813rem;
-  color: #64748b;
+  font-size: var(--text-13);
+  color: var(--color-text-muted);
 }
 </style>
